@@ -1,0 +1,99 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Daily statistics (non-global) per country and detailed regions
+model DailyReport {
+  id                Int       @id @default(autoincrement())
+  
+  // Geographic info
+  fips              String?   // FIPS code (US only)
+  admin2            String?   // County/City
+  provinceState     String?   // Province/State
+  countryRegion     String    // Country (required)
+  
+  // Last update
+  lastUpdate        DateTime
+ 
+  // Coordinates
+  latitude          Float?
+  longitude         Float?
+ 
+  // Main stats
+  confirmed         Int       @default(0)
+  deaths            Int       @default(0)
+  recovered         Int       @default(0)
+  active            Int       @default(0)
+ 
+  // Additional stats
+  combinedKey       String?   // Combined key (Admin2, Province, Country)
+  incidentRate      Float?    // Incidence rate (per 100k)
+  caseFatalityRatio Float?    // Case fatality ratio (%)
+ 
+  // Metadata
+  reportDate        DateTime  // Report date (filename)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  // Indexes
+  @@index([countryRegion, reportDate])
+  @@index([reportDate])
+  @@index([provinceState, reportDate])
+  @@unique([countryRegion, provinceState, admin2, reportDate])
+}
+
+// Global stats per country per day
+model DailyGlobalStats {
+  id              Int      @id @default(autoincrement())
+  date            DateTime @unique
+  totalConfirmed  BigInt   @default(0)
+  totalDeaths     BigInt   @default(0)
+  newDeaths       Int?
+  totalRecovered  BigInt   @default(0)
+  totalActive     BigInt   @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([date])
+}
+
+// Detailed global stats per country per day
+model CountryStats {
+  id              Int      @id @default(autoincrement())
+  countryRegion   String
+  date            DateTime
+  totalConfirmed  Int      @default(0)
+  totalDeaths     Int      @default(0)
+  newDeaths       Int?
+  totalRecovered  Int      @default(0)
+  totalActive     Int      @default(0)
+  incidentRate    Float?
+  caseFatalityRatio Float?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@unique([countryRegion, date])
+  @@index([countryRegion])
+  @@index([date])
+}
+
+// population per country
+model CountryPopulation {
+  id        Int    @id @default(autoincrement())
+  country   String
+  year      Int
+  population BigInt
+
+  @@unique([country, year])
+}
