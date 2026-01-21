@@ -44,6 +44,20 @@ In Docker Compose, the `frontend` service rewrites the connection string to targ
    ```
 5. Open [http://localhost:3000](http://localhost:3000).
 
+
+## Datasets (required for imports)
+
+The CSV datasets are not versioned in the public repo. You must download them and place them locally:
+
+- COVID-19 daily reports (Johns Hopkins CSSE):
+  - Source: https://github.com/CSSEGISandData/COVID-19
+  - Place CSV files in: `covid_19_daily_reports/` (file names like `MM-DD-YYYY.csv`)
+- Population data (World Bank):
+  - Source: https://data.worldbank.org/indicator/SP.POP.TOTL
+  - Download the CSV (e.g. `API_SP.POP.TOTL_DS2_en_csv_v2_*.csv`)
+  - Place it in: `country_population/` and keep the filename expected by the script:
+    `API_SP.POP.TOTL_DS2_en_csv_v2_2461.csv`
+
 ## Run with Docker Compose
 
 The project ships a multi-stage Dockerfile and `docker-compose.yml` to run the Next.js app (`frontend`) and a PostgreSQL database (`db`).
@@ -99,4 +113,4 @@ If you need to re-seed from scratch: drop the volume (`docker compose down -v`),
 
 - COVID reports come from `covid_19_daily_reports` CSVs. Import wipes existing data; take a backup if needed.
 - Population data (2020-2023) is imported via `npm run import-population`.
-- Recovered global total falls back to the last non-zero value in the DB if the latest day has `totalRecovered = 0`.
+- Recovered global total shows `N/A` if the latest day has `totalRecovered = 0`.
